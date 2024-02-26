@@ -1,5 +1,5 @@
 import md5 from 'md5';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 const BASE_URL = 'https://api.valantis.store:41000/';
 const PASSWORD = 'Valantis';
