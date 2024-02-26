@@ -1,0 +1,16 @@
+@import './variables';
+
+@keyframes rotate {
+	0% {
+		rotate: 0deg;
+		transform: scale(0.6);
+	}
+	50% {
+		rotate: 100deg;
+		transform: scale(0.4);
+	}
+	100% {
+		rotate: 360deg;
+		transform: scale(0.6);
+	}
+}

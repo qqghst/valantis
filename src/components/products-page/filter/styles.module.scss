@@ -1,0 +1,49 @@
+.form {
+	input {
+		-webkit-appearance: none;
+		background-color: white;
+		color: inherit;
+		outline: none;
+		resize: none;
+		box-sizing: border-box;
+		border-radius: 4px;
+		border: 1px solid rgb(141, 141, 141);
+		box-shadow: none;
+		padding: 12px;
+		margin-right: 16px;
+		min-width: 240px;
+
+		&::placeholder {
+			color: grey;
+		}
+
+		&:hover {
+			border-color: red;
+		}
+
+		&:focus {
+			border-color: red;
+		}
+	}
+
+	button {
+		-webkit-appearance: none;
+		background-color: white;
+		color: inherit;
+		outline: none;
+		resize: none;
+		box-sizing: border-box;
+		border-radius: 4px;
+		border: 1px solid rgb(141, 141, 141);
+		box-shadow: none;
+		padding: 12px;
+		margin-right: 16px;
+		min-width: 80px;
+		cursor: pointer;
+		transition: all 0.6s ease-in;
+
+		&:hover {
+			background-color: red;
+		}
+	}
+}

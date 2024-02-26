@@ -1,0 +1,53 @@
+.buttonsFiltes {
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+    justify-content: space-between;
+    padding: 32px
+}
+
+.productsContainer {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 24px;
+	margin-bottom: 20px;
+	padding: 32px 64px;
+
+	.product {
+		display: flex;
+		flex-direction: column;
+		text-align: center;
+		gap: 12px;
+
+		border: 1px solid #ccc;
+		border-radius: 16px;
+		padding: 10px;
+		box-shadow:
+			0 2px 4px rgba(0, 0, 0, 0.1),
+			0 4px 20px rgba(0, 0, 0, 0.1);
+
+		.title {
+			display: block;
+			color: blue;
+			font-size: 16px;
+			font-weight: 400;
+		}
+
+		.price {
+			display: block;
+			color: black;
+			font-size: 19.2px;
+			font-weight: 700;
+		}
+
+		.brand {
+			display: block;
+		}
+
+		.id {
+			display: block;
+			font-size: 11.11px;
+			color: rgba(0, 0, 0, 0.293);
+		}
+	}
+}
