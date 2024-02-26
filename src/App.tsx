@@ -5,7 +5,7 @@ function App() {
 	return (
 		<>
 			<main>
-				{/* <ProductsPage /> */}
+				<p>прошу прочитать README на гитхабе по поводу возможным неполадок с апи</p>
 				<ProductsPage />
 			</main>
 		</>
