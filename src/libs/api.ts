@@ -1,5 +1,5 @@
-import md5 from 'md5';
 import axios from 'axios';
+import md5 from 'md5';
 
 const BASE_URL = 'https://api.valantis.store:41000/';
 const PASSWORD = 'Valantis';
@@ -21,7 +21,7 @@ const generateAuthHeader = () => {
 	return md5(`${PASSWORD}_${timestamp}`);
 };
 
-export const fetchData = async (action: string, params: Params = {}) => {
+export const fetchItems = async (action: string, params: Params = {}) => {
 	try {
 		const response = await apiClient.post(
 			'/',
@@ -33,8 +33,7 @@ export const fetchData = async (action: string, params: Params = {}) => {
 				headers: { 'X-Auth': generateAuthHeader() },
 			},
 		);
-
-		return response.data;
+		return response.data.result;
 	} catch (error) {
 		if (axios.isAxiosError(error)) {
 			console.error('API error:', error.response ? error.response.data : error.message);

@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { fetchData } from '../../libs/api';
+import { fetchItems } from '../../libs/api';
 import styles from './styles.module.scss';
 import ButtonTwoCircles from '../../ui/buttons';
-import ProductFilter from './filter';
 import Loader from '../../ui/loader';
+import Filter from './filter';
 
 interface Product {
 	id: string;
@@ -21,93 +21,123 @@ interface Filters {
 const ProductsPage: React.FC = () => {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [products, setProducts] = useState<Product[]>([]);
-	const [page, setPage] = useState(0);
-	const limit = 50;
-
-	//фильтрация
-	const [filters, setFilters] = useState<Filters>({
+	const [page, setPage] = useState<number>(0);
+	const LIMIT = 50;
+	const [filter, setFilter] = useState<Filters>({
 		product: '',
 		price: '',
 		brand: '',
 	});
 
-	const fetchProducts = useCallback(async (offset = 0, appliedFilters: Filters) => {
+	const handleFilterChange = useCallback((e: { target: { name: string; value: string } }) => {
+		const { name, value } = e.target;
+		setFilter((prev) => ({
+			...prev,
+			[name]: value,
+		}));
+	}, []);
+
+	const fetchProducts = async () => {
 		setIsLoading(true);
 		try {
-			let idsResponse;
-			const filterParams: { [key: string]: any } = {};
+			let idsResult = await fetchItems('get_ids', { offset: page * LIMIT, limit: LIMIT });
 
-			if (appliedFilters.product) {
-				filterParams.product = appliedFilters.product;
-			}
-			if (appliedFilters.price && !isNaN(parseFloat(appliedFilters.price))) {
-				filterParams.price = parseFloat(appliedFilters.price);
-			}
-			if (appliedFilters.brand) {
-				filterParams.brand = appliedFilters.brand;
-			}
+			if (
+				filter.product ||
+				(filter.price && !isNaN(parseFloat(filter.price)) && filter.price.trim() !== '') ||
+				filter.brand
+			) {
+				const filteredIds = await fetchItems('filter', {
+					product: filter.product,
+					price: parseFloat(filter.price),
+					brand: filter.brand,
+				});
 
-			if (Object.keys(filterParams).length) {
-				idsResponse = await fetchData('filter', filterParams);
+				idsResult = idsResult.filter((id: any) => filteredIds.includes(id));
+			}
+			if (idsResult.length > 0) {
+				const itemsResult = await fetchItems('get_items', { ids: idsResult });
+
+				const itemsMap = new Map();
+				itemsResult.forEach((item: { id: any }) => {
+					if (!itemsMap.has(item.id)) {
+						itemsMap.set(item.id, item);
+					}
+				});
+
+				setProducts(Array.from(itemsMap.values()));
 			} else {
-				idsResponse = await fetchData('get_ids', { offset, limit });
-			}
-
-			if (idsResponse && idsResponse.result) {
-				const uniqueIds = [...new Set(idsResponse.result)];
-				const itemsResponse = await fetchData('get_items', { ids: uniqueIds });
-				if (itemsResponse && itemsResponse.result) {
-					setProducts(itemsResponse.result);
-				}
+				setProducts([]);
 			}
 		} catch (error) {
 			console.error(error);
 		} finally {
 			setIsLoading(false);
 		}
-	}, []);
+	};
 
 	useEffect(() => {
-		fetchProducts(page * limit, filters);
-	}, [page, fetchProducts]);
-
-	const handleFilterChange = useCallback((e: { target: { name: string; value: string } }) => {
-		const { name, value } = e.target;
-		setFilters((prevFilters) => ({
-			...prevFilters,
-			[name]: value,
-		}));
-	}, []);
-
-	const applyFilters = useCallback(() => {
-		setPage(0);
-		fetchProducts(0, filters);
-	}, [filters]);
+		fetchProducts();
+	}, [page, filter]);
 
 	return (
 		<>
-			<div className={styles.buttonsFiltes}>
-				<ProductFilter filters={filters} handleFilterChange={handleFilterChange} applyFilters={applyFilters} />
-				<ButtonTwoCircles
-					nextSlide={() => setPage((prev) => prev - 1)}
-					prevSlide={() => setPage((prev) => prev + 1)}
-				/>
-			</div>
+			<div>
+				<div className={styles.buttonsFiltes}>
+					<Filter filter={filter} onFilterChange={handleFilterChange} />
 
-			{isLoading ? (
-				<Loader />
-			) : (
-				<div className={styles.productsContainer}>
-					{products.map((item, index) => (
-						<div className={styles.product} key={index}>
-							<span className={styles.title}>{item.product}</span>
-							<span className={styles.price}>{item.price} руб.</span>
-							<span className={styles.brand}>Бренд: {item.brand || 'empty for now'}</span>
-							<span className={styles.id}>ID: {item.id}</span>
-						</div>
-					))}
+					{/* <ButtonTwoCircles
+						nextSlide={() => {
+							setPage(page - 1);
+						}}
+						prevSlide={() => {
+							setPage(page + 1);
+						}}
+					/> */}
+					<ButtonTwoCircles
+						prevSlide={() => setPage((oldPage) => Math.max(0, oldPage - 1))}
+						nextSlide={() => setPage((oldPage) => oldPage + 1)}
+					/>
 				</div>
-			)}
+				<div>
+					<input
+						type='text'
+						placeholder='Product name'
+						name='product'
+						value={filter.product}
+						onChange={handleFilterChange}
+					/>
+					<input
+						type='number'
+						placeholder='Price'
+						name='price'
+						value={filter.price}
+						onChange={handleFilterChange}
+					/>
+					<input
+						type='text'
+						placeholder='Brand'
+						name='brand'
+						value={filter.brand}
+						onChange={handleFilterChange}
+					/>
+					<button onClick={fetchProducts}>Apply Filters</button>
+				</div>
+				{isLoading ? (
+					<Loader />
+				) : (
+					<div className={styles.productsContainer}>
+						{products.map((item, index) => (
+							<div className={styles.product} key={item.id}>
+								<span className={styles.title}>{item.product}</span>
+								<span className={styles.price}>{item.price} руб.</span>
+								<span className={styles.brand}>Бренд: {item.brand || 'empty for now'}</span>
+								<span className={styles.id}>ID: {item.id}</span>
+							</div>
+						))}
+					</div>
+				)}
+			</div>
 		</>
 	);
 };

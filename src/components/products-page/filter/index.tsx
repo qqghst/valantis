@@ -1,36 +1,34 @@
 import React from 'react';
 import styles from './styles.module.scss';
 
-interface Props {
-	filters: {
+interface IFilterProps {
+	filter: {
 		product: string;
 		price: string;
 		brand: string;
 	};
-	handleFilterChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-	applyFilters: () => void;
+	onFilterChange: (event: any) => void;
 }
 
-const ProductFilter: React.FC<Props> = ({ filters, handleFilterChange, applyFilters }) => {
+const Filter: React.FC<IFilterProps> = ({ filter, onFilterChange }) => {
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 	};
+
 	return (
 		<form className={styles.form} onSubmit={handleSubmit}>
 			<input
-				name='product'
 				type='text'
-				placeholder='Наименование'
-				value={filters.product}
-				onChange={handleFilterChange}
+				placeholder='Product name'
+				name='product'
+				value={filter.product}
+				onChange={onFilterChange}
 			/>
-			<input name='price' type='number' placeholder='Цена' value={filters.price} onChange={handleFilterChange} />
-			<input name='brand' type='text' placeholder='Бренд' value={filters.brand} onChange={handleFilterChange} />
-			<button type='submit' onClick={applyFilters}>
-				Применить
-			</button>
+			<input type='number' placeholder='Price' name='price' value={filter.price} onChange={onFilterChange} />
+			<input type='text' placeholder='Brand' name='brand' value={filter.brand} onChange={onFilterChange} />
+			<button onClick={onFilterChange}>Apply Filters</button>
 		</form>
 	);
 };
 
-export default ProductFilter;
+export default Filter;
