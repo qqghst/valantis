@@ -8,9 +8,10 @@ interface IFilterProps {
 		brand: string;
 	};
 	onFilterChange: (event: any) => void;
+	onFetchProducts: (event: any) => void;
 }
 
-const Filter: React.FC<IFilterProps> = ({ filter, onFilterChange }) => {
+const Filter: React.FC<IFilterProps> = ({ filter, onFilterChange, onFetchProducts }) => {
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 	};
@@ -26,7 +27,7 @@ const Filter: React.FC<IFilterProps> = ({ filter, onFilterChange }) => {
 			/>
 			<input type='number' placeholder='Price' name='price' value={filter.price} onChange={onFilterChange} />
 			<input type='text' placeholder='Brand' name='brand' value={filter.brand} onChange={onFilterChange} />
-			<button onClick={onFilterChange}>Apply Filters</button>
+			<button onClick={onFetchProducts}>Apply Filters</button>
 		</form>
 	);
 };

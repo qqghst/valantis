@@ -14,7 +14,7 @@ interface Product {
 
 interface Filters {
 	product: string;
-	price: string;
+	price: any;
 	brand: string;
 }
 
@@ -39,32 +39,37 @@ const ProductsPage: React.FC = () => {
 
 	const fetchProducts = async () => {
 		setIsLoading(true);
+		console.log('Fetching products with filters:', filter);
 		try {
 			let idsResult = await fetchItems('get_ids', { offset: page * LIMIT, limit: LIMIT });
+			const filters: Partial<Filters> = {};
 
-			if (
-				filter.product ||
-				(filter.price && !isNaN(parseFloat(filter.price)) && filter.price.trim() !== '') ||
-				filter.brand
-			) {
-				const filteredIds = await fetchItems('filter', {
-					product: filter.product,
-					price: parseFloat(filter.price),
-					brand: filter.brand,
-				});
+			if (filter.product.trim()) {
+				filters.product = filter.product.trim();
+			}
 
+			const price = parseFloat(filter.price);
+			if (!isNaN(price) && price > 0) {
+				filters.price = price;
+			}
+
+			if (filter.brand.trim()) {
+				filters.brand = filter.brand.trim();
+			}
+
+			if (Object.keys(filters).length > 0) {
+				const filteredIds = await fetchItems('filter', filters);
 				idsResult = idsResult.filter((id: any) => filteredIds.includes(id));
 			}
+
 			if (idsResult.length > 0) {
 				const itemsResult = await fetchItems('get_items', { ids: idsResult });
-
 				const itemsMap = new Map();
 				itemsResult.forEach((item: { id: any }) => {
 					if (!itemsMap.has(item.id)) {
 						itemsMap.set(item.id, item);
 					}
 				});
-
 				setProducts(Array.from(itemsMap.values()));
 			} else {
 				setProducts([]);
@@ -78,28 +83,19 @@ const ProductsPage: React.FC = () => {
 
 	useEffect(() => {
 		fetchProducts();
-	}, [page, filter]);
+	}, [page]);
 
 	return (
 		<>
 			<div>
-				<div className={styles.buttonsFiltes}>
-					<Filter filter={filter} onFilterChange={handleFilterChange} />
-
-					{/* <ButtonTwoCircles
-						nextSlide={() => {
-							setPage(page - 1);
-						}}
-						prevSlide={() => {
-							setPage(page + 1);
-						}}
-					/> */}
+				<div className={styles.buttonsFilters}>
+					<Filter filter={filter} onFilterChange={handleFilterChange} onFetchProducts={fetchProducts} />
 					<ButtonTwoCircles
 						prevSlide={() => setPage((oldPage) => Math.max(0, oldPage - 1))}
 						nextSlide={() => setPage((oldPage) => oldPage + 1)}
 					/>
 				</div>
-				<div>
+				{/* <div>
 					<input
 						type='text'
 						placeholder='Product name'
@@ -122,12 +118,12 @@ const ProductsPage: React.FC = () => {
 						onChange={handleFilterChange}
 					/>
 					<button onClick={fetchProducts}>Apply Filters</button>
-				</div>
+				</div> */}
 				{isLoading ? (
 					<Loader />
 				) : (
 					<div className={styles.productsContainer}>
-						{products.map((item, index) => (
+						{products.map((item) => (
 							<div className={styles.product} key={item.id}>
 								<span className={styles.title}>{item.product}</span>
 								<span className={styles.price}>{item.price} руб.</span>
